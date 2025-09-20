@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Responsive Image Card — Fade-in Overlay</title>
+  <style>
+    :root{
+      --card-width: 360px;
+      --card-radius: 12px;
+      --accent: #ff7a59;
+      --text-on-accent: #fff;
+      --transition-fast: 180ms;
+      --transition-med: 280ms;
+      --overlay-duration: 320ms;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: #f5f6f8;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      width: min(var(--card-width), 92vw);
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+      background: #fff;
+      transform: translateZ(0);
+      transition: transform var(--transition-med) ease, box-shadow var(--transition-med) ease;
+      outline: none;
+    }
+
+    .card:hover,
+    .card:focus-within,
+    .card:focus {
+      transform: translateY(-8px) scale(1.01);
+      box-shadow: 0 18px 40px rgba(15,23,42,0.20);
+    }
+
+    .card[tabindex] { cursor: pointer; }
+
+    .media {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3 / 5;
+      background: #ddd;
+      overflow: hidden;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transform-origin: center center;
+      transition: transform var(--transition-med) ease;
+      will-change: transform;
+    }
+
+    /* Overlay base: initially hidden (opacity 0, slightly shifted down) */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 18px;
+      color: #fff;
+      box-sizing: border-box;
+      background: linear-gradient(180deg, rgba(0,0,0,0.02) 34%, rgba(0,0,0,0.64) 100%);
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;                /* prevent interactions while hidden */
+      transition: opacity var(--overlay-duration) ease, transform var(--overlay-duration) ease, background var(--transition-fast) ease;
+      will-change: opacity, transform;
+    }
+
+    /* Reveal overlay: fade-in (opacity) + slide-up (transform) */
+    .card:hover img,
+    .card:focus-within img {
+      transform: scale(1.06);
+    }
+    .card:hover .overlay,
+    .card:focus-within .overlay,
+    .card.is-open .overlay {               /* .is-open used by optional JS for touch */
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;                /* allow interaction when visible */
+      background: linear-gradient(180deg, rgba(0,0,0,0.06) 30%, rgba(0,0,0,0.72) 100%);
+    }
+
+    .title {
+      font-weight: 700;
+      font-size: 1.05rem;
+      line-height: 1.1;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.45);
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      opacity: 0.95;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.35);
+    }
+
+    .cta-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--accent);
+      color: var(--text-on-accent);
+      box-shadow: 0 6px 18px rgba(255,122,89,0.14);
+      transition: transform var(--transition-fast) ease, box-shadow var(--transition-fast) ease;
+    }
+
+    .btn:hover,
+    .btn:focus { transform: translateY(-2px) scale(1.02); }
+    .btn:active { transform: translateY(0) scale(0.995); }
+
+    .link {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background var(--transition-fast) ease, transform var(--transition-fast) ease;
+    }
+    .link:hover,
+    .link:focus { background: rgba(255,255,255,0.18); transform: translateY(-2px); }
+
+    .card-body {
+      padding: 12px 14px;
+      background: #fff;
+    }
+    .card-body p { margin: 0; color: #111827; font-size: 0.95rem; }
+
+    @media (min-width: 900px) { :root { --card-width: 420px; } }
+
+    @supports not (aspect-ratio: 1/1) {
+      .media { height: 560px; }
+      @media (max-width: 420px) { .media { height: 420px; } }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      :root { --transition-fast: 1ms; --transition-med: 1ms; --overlay-duration: 1ms; }
+      .card, img, .overlay, .btn, .link { transition: none !important; transform: none !important; }
+      .overlay { opacity: 1 !important; transform: none !important; pointer-events: auto !important; } /* keep overlay visible for reduced-motion users */
+    }
+  </style>
+</head>
+<body>
+  <!-- tabindex added so keyboard users can focus the card and trigger focus styles -->
+  <article class="card" aria-labelledby="card-title" tabindex="0">
+    <figure class="media" role="img" aria-label="Back view of a person in a white two-piece swimsuit and high-heeled sandals, hand touching hair.">
+      <!-- Replace the src with your image URL or path -->
+      <img src="person-swimsuit.png" alt="Back view of a person in a white two-piece swimsuit and high-heeled sandals, hand touching hair.">
+      <figcaption class="overlay" aria-hidden="false">
+        <div>
+          <div id="card-title" class="title">White Swimwear — Back View</div>
+          <div class="subtitle">Portrait-style shot with transparent background</div>
+        </div>
+        <div class="cta-row">
+          <button class="btn" type="button" aria-label="View details">View details</button>
+          <a class="link" href="#" role="button" aria-label="Download image">Download</a>
+        </div>
+      </figcaption>
+    </figure>
+
+    <div class="card-body">
+      <p>Hover or focus to reveal a smooth fade-in overlay. For touch devices, tap the card to reveal actions (optional JS below).</p>
+    </div>
+  </article>
+
+  <!-- Optional small JS: improves touch behavior (tap to reveal, tap again to follow). Remove if you don't want it. -->
+  <script>
+    (function () {
+      // Only enable on touch-capable devices
+      if (!('ontouchstart' in window)) return;
+
+      document.querySelectorAll('.card').forEach(function(card){
+        // Toggle .is-open on first tap. If a tap happens while open on an actionable element, allow the click.
+        card.addEventListener('touchstart', function(evt){
+          if (!card.classList.contains('is-open')) {
+            card.classList.add('is-open');
+            // prevent immediate click on first tap
+            evt.preventDefault();
+            // close other open cards (optional)
+            document.querySelectorAll('.card.is-open').forEach(function(other){
+              if (other !== card) other.classList.remove('is-open');
+            });
+          }
+          // if already open, allow default behavior (links/buttons will work)
+        }, {passive:false});
+      });
+
+      // Close overlays when tapping outside a card
+      document.addEventListener('touchstart', function(e){
+        if (!e.target.closest('.card')) {
+          document.querySelectorAll('.card.is-open').forEach(function(c){ c.classList.remove('is-open'); });
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
