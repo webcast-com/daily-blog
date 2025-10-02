@@ -3,7 +3,8 @@ async function loadPosts() {
 
   // Fetch a list of posts from /posts directory
   const postList = [
-    "example-post.md" // In production, you can generate this list dynamically with a static site generator
+    "example-post.md",
+    "example-post-1.md"
   ];
 
   for (const post of postList) {
